@@ -1,0 +1,17 @@
+- name: Copy stack file
+  template:
+    src: stack.yml.j2
+    dest: /etc/stack.yml
+    owner: root
+    group: root
+    mode: 0644
+
+- include: stack_macvlan.yml
+  when: docker_swarm_network_driver is defined and docker_swarm_network_driver == "macvlan"
+
+- include: stack_overlay.yml
+  when: docker_swarm_network_driver is not defined or docker_swarm_network_driver == "overlay"
+
+- name: Deploy stack
+  command: docker stack deploy -c /etc/stack.yml {{ docker_swarm_stack_name }}
+  

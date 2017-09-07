@@ -1,0 +1,5 @@
+# Name of the Docker group
+docker_group: "docker"
+
+# Name of the SSH Deamon
+ssh_daemon: sshd

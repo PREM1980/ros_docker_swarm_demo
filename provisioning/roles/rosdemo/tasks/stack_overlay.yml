@@ -1,0 +1,22 @@
+- name: Check if overlay exists
+  command: docker network inspect {{ docker_swarm_network_name }}
+  register: result
+  ignore_errors: True
+    
+- name: Create overlay network
+  command: docker network create -d overlay --subnet {{ docker_swarm_network }} --attachable {{ docker_swarm_network_name }}
+  when: result|failed
+
+- name: Add VPN server to /etc/hosts
+  lineinfile:
+    dest: /etc/hosts
+    regexp: '^127\.0\.0\.1       VPN\.SERVERNAME\.COM'
+    line: '127.0.0.1       VPN.SERVERNAME.COM'
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install OpenVPN
+  apt:
+    name: openvpn
+    state: present

@@ -1,0 +1,9 @@
+- name: Check if underlay exists
+  command: docker network inspect {{ docker_swarm_network_name }}
+  register: result
+  ignore_errors: True
+    
+- name: Create underlay network
+  command: docker network create -d macvlan --scope swarm --config-from {{ docker_swarm_network_config_name }} {{ docker_swarm_network_name }}
+  when: result|failed
+  

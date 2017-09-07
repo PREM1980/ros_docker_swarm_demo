@@ -1,0 +1,16 @@
+- hosts: docker
+  become: yes
+  vars:
+    docker_swarm_interface: "eth1"
+  roles:
+    - docker
+
+- hosts: docker_swarm_manager
+  become: yes
+  roles:
+    - rosdemo
+  
+- hosts: operations
+  become: yes
+  roles:
+    - ros

@@ -1,0 +1,35 @@
+- name: Install apt packages
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gnupg2
+    - software-properties-common
+
+- name: Add apt key
+  apt_key:
+    url: "https://download.docker.com/linux/debian/gpg"
+    state: present
+    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+
+- name: Get distribution
+  command: lsb_release -cs
+  register: release_output
+
+- name: Get architecture
+  command: dpkg --print-architecture
+  register: arch_output
+
+- name: Add apt repo
+  apt_repository:
+    repo: deb [arch={{ arch_output.stdout }}] https://download.docker.com/linux/debian {{ release_output.stdout }} stable edge
+    state: present
+
+- name: Update repositories cache and install docker
+  apt:
+    name: docker-ce
+    state: present
+    update_cache: yes    

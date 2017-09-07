@@ -1,0 +1,70 @@
+- name: Update locale
+  command: update-locale LANG=C LANGUAGE=C LC_ALL=C LC_MESSAGES=POSIX
+  
+- name: Install initial deps
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - dirmngr
+
+- name: Add apt key
+  apt_key:
+    keyserver: hkp://keyserver.ubuntu.com:80
+    id: "{{ item }}"
+    state: present
+  with_items:
+    - 40976EAF437D05B5
+    - 3B4FE6ACC0B21F32
+
+- name: Add the world
+  apt_repository:
+    repo: deb http://archive.ubuntu.com/ubuntu trusty main universe restricted multiverse
+    state: present
+    
+- name: Add ros apt key
+  apt_key:
+    keyserver: hkp://p80.pool.sks-keyservers.net:80
+    id: 421C365BD9FF1F717815A3895523BAEEB01FA116
+    state: present
+
+- name: Add apt repo
+  apt_repository:
+    repo: deb http://packages.ros.org/ros/ubuntu trusty main
+    filename: ros-latest.list
+    state: present
+
+- name: Update the cache
+  apt:
+    update_cache: yes
+
+- name: Install further deps
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - ros-indigo-ros-core
+
+# - name: Install initial ros deps
+#   apt:
+#     name: "{{ item }}"
+#     state: present
+#   with_items:
+#     - curl
+#     - wget 
+#     - emacs
+#     - vim
+#     - git
+#     - g++
+#     - python-rosdep
+#     - python-rosinstall
+#     - python-vcstools
+
+- name: init rosdep
+  command: rosdep init
+  ignore_errors: True
+  
+- name: rosdep update
+  command: rosdep update
+  

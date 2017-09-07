@@ -1,0 +1,31 @@
+---
+
+- set_fact:
+    docker_swarm_network_cidr_mask: "{{ docker_swarm_network | ipaddr('prefix') + 3 }}"
+
+- set_fact:
+    docker_swarm_network_base_address: "{{ docker_swarm_network | ipaddr('network') | ipaddr('int') }}"
+
+- set_fact:
+    docker_swarm_machine_index: "{{ (1 + groups.docker.index(inventory_hostname)) }}"
+
+- set_fact:
+    docker_swarm_network_node_base_address: "{{ docker_swarm_network_base_address | int + 32 * docker_swarm_machine_index | int }}/{{ docker_swarm_network_cidr_mask }}"
+
+- set_fact:
+    docker_swarm_network_gateway: "{{ docker_swarm_network | ipaddr('1') | ipaddr('ip') }}"
+
+- name: Create an underlay (MACVLAN) network config
+  command: docker network create --config-only --subnet {{ docker_swarm_network }} --gateway {{ docker_swarm_network_gateway }} -o parent={{ docker_swarm_interface }} --ip-range {{ docker_swarm_network_node_base_address | ipaddr('ipv4') }} {{ docker_swarm_network_config_name }}
+  ignore_errors: True
+
+- name: Set promiscuous mode persistently
+  copy:
+    src: rc.local
+    dest: /etc/
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Set promiscuous mode for first boot
+  command: ip link set eth1 promisc on

@@ -1,0 +1,53 @@
+version: "3.3"
+networks:
+  default:
+    external:
+      name: {{ docker_swarm_network_name }}
+
+services:
+  master:
+    image: jhosteny/ros-tutorials:latest
+    deploy:
+      placement:
+        constraints:
+          - node.labels.navigation == true
+    ports:
+      - "11311:11311"
+    command: roscore
+
+  listener:
+    depends_on:
+      - master
+      - talker
+    image: jhosteny/ros-tutorials:latest
+    deploy:
+      placement:
+        constraints:
+          - node.labels.navigation == true
+    environment:
+      - "ROS_HOSTNAME=listener"
+      - "ROS_MASTER_URI=http://master:11311"
+    command: rosrun roscpp_tutorials listener
+
+  talker:
+    depends_on:
+      - master
+    image: jhosteny/ros-tutorials:latest
+    deploy:
+      placement:
+        constraints:
+          - node.labels.imaging == true
+    environment:
+      - "ROS_HOSTNAME=talker"
+      - "ROS_MASTER_URI=http://master:11311"
+    command: rosrun roscpp_tutorials talker
+
+  iperf_server:
+    image: jhosteny/ros-tutorials:latest
+    deploy:
+      placement:
+        constraints:
+          - node.labels.imaging == true
+    command: /usr/bin/iperf3 -s
+
+  

@@ -1,0 +1,15 @@
+# Install the Docker Engine
+- include: docker_engine.yml
+  when: not skip_engine
+
+# Adds the Docker admin users to the Docker group
+- include: docker_group.yml
+  when: not skip_group
+
+# Setup the Docker Swarm Cluster
+- include: swarm_cluster.yml
+  when: not skip_swarm
+
+# Setup MACVLAN mode
+- include: swarm_macvlan.yml
+  when: docker_swarm_network_driver is defined and docker_swarm_network_driver == "macvlan"
